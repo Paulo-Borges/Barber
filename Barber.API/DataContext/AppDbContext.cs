@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Barber.API.Domain.Entity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Barber.API.DataContext
 {
@@ -6,6 +7,6 @@ namespace Barber.API.DataContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
       
-        
+        public DbSet<Billing> Billings { get; set; } = null!;
     }
 }

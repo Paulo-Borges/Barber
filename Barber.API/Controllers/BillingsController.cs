@@ -1,5 +1,8 @@
-﻿using Barber.API.Domain.DTOs;
+﻿using Barber.API.DataContext;
+using Barber.API.Domain.DTOs;
+using Barber.API.Domain.Entity;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Barber.API.Controllers
@@ -8,67 +11,83 @@ namespace Barber.API.Controllers
     [ApiController]
     public class BillingsController : ControllerBase
     {
-        // Injeção de dependência do seu serviço de aplicação ou mediatr
-        // private readonly IBillingService _billingService;
-        // public BillingsController(IBillingService billingService) => _billingService = billingService;
+        private readonly AppDbContext _context;
 
-        /// <summary>
-        /// Criar um novo faturamento.
-        /// </summary>
-        /// <param name="dto">Dados do faturamento a ser criado.</param>
-        /// <returns>O faturamento recém-criado.</returns>
+           public BillingsController(AppDbContext context)
+        {
+            _context = context;
+        }
+
+
         [HttpPost]
         [ProducesResponseType(typeof(BillingResponseDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Create([FromBody] CreateBillingDto dto)
         {
-            // Exemplo fictício de chamada do serviço:
-            // var response = await _billingService.CreateAsync(dto);
+            // 1.1 Transformar os dados recebidos (DTO) no objeto da nossa tabela/entidade (Billing)
+            var billing = new Billing
+            (
+              dto.Date,
+              dto.BarberName,
+              dto.ClientName,
+              dto.ServiceName,
+              dto.Amount,
+              dto.PaymentMethod,
+              dto.Status,
+              dto.Notes
+            );
+
+            _context.Billings.Add( billing );
+            await _context.SaveChangesAsync();
 
             var response = new BillingResponseDto(
-                Guid.NewGuid(), dto.Date, dto.BarberName, dto.ClientName,
-                dto.ServiceName, dto.Status == Domain.Enums.BillingStatus.Canceled ? 0m : dto.Amount,
-                dto.PaymentMethod, dto.Status, dto.Notes, DateTime.UtcNow, DateTime.UtcNow
+                billing.Id, billing.Date, billing.BarberName, billing.ClientName,
+                billing.ServiceName, billing.Amount,
+                billing.PaymentMethod, billing.Status, billing.Notes, billing.CreatedAt, billing.UpdatedAt
             );
 
             return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
         }
 
-        /// <summary>
-        /// Listar faturamentos com filtros, paginação e ordenação.
-        /// </summary>
-        /// <param name="parameters">Parâmetros de filtro e paginação.</param>
-        /// <returns>Lista paginada de faturamentos.</returns>
+   
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<BillingResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAll([FromQuery] GetBillingsQueryParameters parameters)
         {
-            // var result = await _billingService.GetAllAsync(parameters);
-            return Ok(new List<BillingResponseDto>());
+            var billingsFromDb = await _context.Billings.ToListAsync();
+
+            // 2.2 Converter os itens do banco para o formato de DTO que a API precisa devolver
+            var responseList = billingsFromDb.Select(b => new BillingResponseDto(
+                b.Id, b.Date, b.BarberName, b.ClientName,
+                b.ServiceName, b.Amount, b.PaymentMethod,
+                b.Status, b.Notes, b.CreatedAt, b.UpdatedAt
+            ));
+
+            return Ok(responseList);
         }
 
-        /// <summary>
-        /// Obter um faturamento pelo ID.
-        /// </summary>
-        /// <param name="id">ID (GUID) do faturamento.</param>
-        /// <returns>Os dados do faturamento.</returns>
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(BillingResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetById([FromRoute] Guid id)
+        public async Task<IActionResult> GetById(Guid id)
         {
-            // var result = await _billingService.GetByIdAsync(id);
-            // if (result is null) return NotFound(new { Message = "Faturamento não encontrado." });
 
-            return Ok();
+            var billing = await _context.Billings.FindAsync(id);
+
+            if (billing == null)
+            {
+                return NotFound();
+            }
+
+            var response = new BillingResponseDto(
+                billing.Id, billing.Date, billing.BarberName, billing.ClientName,
+                billing.ServiceName, billing.Amount, billing.PaymentMethod,
+                billing.Status, billing.Notes, billing.CreatedAt, billing.UpdatedAt
+            );
+
+            return Ok(response);
         }
 
-        /// <summary>
-        /// Ver o total do período (somando apenas os lançamentos com status Pago).
-        /// </summary>
-        /// <param name="startDate">Data inicial opcional.</param>
-        /// <param name="endDate">Data final opcional.</param>
-        /// <returns>O valor acumulado e a contagem de faturamentos pagos.</returns>
         [HttpGet("summary")]
         [ProducesResponseType(typeof(BillingPeriodSummaryDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetPeriodSummary([FromQuery] DateOnly? startDate, [FromQuery] DateOnly? endDate)
@@ -78,37 +97,23 @@ namespace Barber.API.Controllers
             return Ok(summary);
         }
 
-        /// <summary>
-        /// Atualizar um faturamento existente.
-        /// </summary>
-        /// <param name="id">ID (GUID) do faturamento a ser atualizado.</param>
-        /// <param name="dto">Novos dados do faturamento.</param>
-        /// <returns>Sem conteúdo em caso de sucesso.</returns>
         [HttpPut("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateBillingDto dto)
         {
-            // var success = await _billingService.UpdateAsync(id, dto);
-            // if (!success) return NotFound(new { Message = "Faturamento não encontrado para atualização." });
 
             return NoContent();
         }
 
-        /// <summary>
-        /// Excluir um faturamento pelo ID.
-        /// </summary>
-        /// <param name="id">ID (GUID) do faturamento.</param>
-        /// <returns>Sem conteúdo em caso de sucesso.</returns>
+    
         [HttpDelete("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
-            // var success = await _billingService.DeleteAsync(id);
-            // if (!success) return NotFound(new { Message = "Faturamento não encontrado." });
-
+            
             return NoContent();
         }
     }
