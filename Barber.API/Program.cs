@@ -1,0 +1,48 @@
+using Barber.API.DataContext;
+using Microsoft.EntityFrameworkCore;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+
+builder.Services.AddControllers();
+// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddOpenApi();
+//_______________________________X__________________________Conexão Swagger__________X
+builder.Services.AddSwaggerGen();
+
+//_______________________________X__________________________Conexão Banco de Dados__________X
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")
+    ));
+
+//_______________________________X__________________________Conexão Cors__________X
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngular", policy =>
+
+    policy.WithOrigins("http://localhost:4200")
+           .AllowAnyMethod()
+           .AllowAnyHeader());
+});
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    //_______________________________X__________________________Conexão Swagger__________X
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+
+app.UseAuthorization();
+
+//_______________________________X__________________________Conexão Cors_____X
+app.UseCors("AllowAngular");
+
+app.MapControllers();
+
+app.Run();

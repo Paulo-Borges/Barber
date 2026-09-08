@@ -1,0 +1,6 @@
+@Barber.API_HostAddress = http://localhost:5278
+
+GET {{Barber.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
