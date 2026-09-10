@@ -9,7 +9,7 @@ namespace Barber.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class BillingsController : ControllerBase
+    public class BillingsController : MyFirstApiBaseController
     {
         private readonly AppDbContext _context;
 
@@ -52,7 +52,7 @@ namespace Barber.API.Controllers
    
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<BillingResponseDto>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAll([FromQuery] GetBillingsQueryParameters parameters)
+        public async Task<IActionResult> GetAll([FromBody] GetBillingsQueryParameters parameters)
         {
             var billingsFromDb = await _context.Billings.ToListAsync();
 

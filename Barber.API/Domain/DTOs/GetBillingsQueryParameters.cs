@@ -2,7 +2,7 @@
 
 namespace Barber.API.Domain.DTOs
 {
-    public class GetBillingsQueryParameters(
+    public record GetBillingsQueryParameters(
     DateOnly? StartDate,
     DateOnly? EndDate,
     string? BarberName,

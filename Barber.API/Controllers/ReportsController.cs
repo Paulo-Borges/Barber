@@ -5,7 +5,7 @@ namespace Barber.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ReportsController : ControllerBase
+    public class ReportsController : MyFirstApiBaseController
     {
         // private readonly IReportService _reportService;
         // public ReportsController(IReportService reportService) => _reportService = reportService;

@@ -2,7 +2,7 @@
 
 namespace Barber.API.Domain.DTOs
 {
-    public class UpdateBillingDto(
+    public record UpdateBillingDto(
      DateOnly Date,
     string BarberName,
     string ClientName,
