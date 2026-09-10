@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Barber.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("Borges/[controller]")]
     [ApiController]
     public class MyFirstApiBaseController : ControllerBase
     {

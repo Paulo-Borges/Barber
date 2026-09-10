@@ -3,8 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Barber.API.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
+    
     public class ReportsController : MyFirstApiBaseController
     {
         // private readonly IReportService _reportService;

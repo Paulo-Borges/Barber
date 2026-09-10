@@ -7,8 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Barber.API.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
+   
     public class BillingsController : MyFirstApiBaseController
     {
         private readonly AppDbContext _context;
